@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from funciones import functions
+from funciones import Crypto_functions
 
 key = None  # Define key as None
 
@@ -12,12 +12,12 @@ def manejar_cliente(client_socket):
         message = client_socket.recv(1024)
         if not message:
             break
-        desencriptar = functions.AES_ECB_decrypt(key, message)
+        desencriptar = Crypto_functions.AES_ECB_decrypt(key, message)
         print(f"Cliente: {desencriptar.decode('utf-8')}")
         
         # Enviar respuesta al cliente
         response = input("Servidor: ")
-        encriptar = functions.AES_ECB_encrypt(key, response.encode('utf-8'))
+        encriptar = Crypto_functions.AES_ECB_encrypt(key, response.encode('utf-8'))
         client_socket.send(encriptar)
 
     client_socket.close()
@@ -34,7 +34,7 @@ def iniciar_servidor():
     print(f"Conectado con {client_address}")
 
     # Generar clave y enviarla al cliente
-    key = functions.generar_clave_AES()
+    key = Crypto_functions.generar_clave_AES()
     client_socket.send(key)
 
     manejar_cliente(client_socket)

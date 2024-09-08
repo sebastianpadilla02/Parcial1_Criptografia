@@ -4,7 +4,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import ChaCha20
 from Crypto.Cipher import Salsa20
 
-class functions:
+class Crypto_functions:
     # Clave de 16 bytes (128 bits), 24 bytes (192 bits) o 32 bytes (256 bits)
     def generar_clave_AES():
         clave = get_random_bytes(16)

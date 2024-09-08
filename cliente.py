@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from funciones import functions
+from funciones import Crypto_functions
 
 # Definir la variable global `key`
 key = None
@@ -19,7 +19,7 @@ def recibir_mensajes(client_socket):
             message = client_socket.recv(1024)
             if not message:
                 break
-            desencriptado = functions.AES_ECB_decrypt(key, message)
+            desencriptado = Crypto_functions.AES_ECB_decrypt(key, message)
             print(f"Servidor: {desencriptado.decode('utf-8')}")
 
     except Exception as e:
@@ -51,7 +51,7 @@ def iniciar_cliente():
                 client_socket.close()
                 break
 
-            encriptar = functions.AES_ECB_encrypt(key, message.encode('utf-8'))
+            encriptar = Crypto_functions.AES_ECB_encrypt(key, message.encode('utf-8'))
             client_socket.send(encriptar)
         except Exception as e:
             print(f"Error al enviar mensaje: {e}")
