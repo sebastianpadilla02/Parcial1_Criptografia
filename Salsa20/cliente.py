@@ -1,25 +1,32 @@
 import socket
 import threading
 
+#importar el modulo funciones
 from funciones import Crypto_functions
 
-# Definir la variable global `key`
-key = None
+key = None  # Define key as None
 
 def recibir_mensajes(client_socket):
-    global key 
+    global key
     try:
-        # Recibir la llave del servidor
+        # Recibir la clave del servidor
         key = client_socket.recv(1024)
         if not key:
             print("No se recibió la clave.")
             return
 
         while True:
-            message = client_socket.recv(1024)
-            if not message:
+            # Recibir el mensaje del servidor
+            data = client_socket.recv(1024)
+            if not data:
                 break
-            desencriptado = Crypto_functions.AES_ECB_decrypt(key, message)
+
+            # Extraer el nonce del mensaje
+            nonce = data[:8]  # Asumimos que el nonce es de 24 bytes
+            encrypted_message = data[8:]
+
+            # Desencriptar el mensaje
+            desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
             print(f"Servidor: {desencriptado.decode('utf-8')}")
 
     except Exception as e:
@@ -28,7 +35,7 @@ def recibir_mensajes(client_socket):
         client_socket.close()
 
 def iniciar_cliente():
-    global key  # Hacer referencia a la variable global `key`
+    global key  # Hacer referencia a la variable global key
     
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(('127.0.0.1', 8080))
@@ -51,8 +58,14 @@ def iniciar_cliente():
                 client_socket.close()
                 break
 
-            encriptar = Crypto_functions.AES_ECB_encrypt(key, message.encode('utf-8'))
-            client_socket.send(encriptar)
+            # Generar un nuevo nonce para el mensaje
+            nonce = Crypto_functions.generar_nonce()
+
+            # Encriptar el mensaje
+            encriptar = Crypto_functions.Salsa20_encrypt(key, nonce, message.encode('utf-8'))
+
+            # Enviar el nonce y el mensaje encriptado
+            client_socket.send(nonce + encriptar)
         except Exception as e:
             print(f"Error al enviar mensaje: {e}")
             client_socket.close()

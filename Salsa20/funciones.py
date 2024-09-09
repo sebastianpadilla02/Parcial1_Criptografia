@@ -7,8 +7,12 @@ from Crypto.Cipher import Salsa20
 class Crypto_functions:
     # Clave de 16 bytes (128 bits), 24 bytes (192 bits) o 32 bytes (256 bits)
     def generar_clave_AES():
-        clave = get_random_bytes(16)
+        clave = get_random_bytes(32)
         return clave
+
+    def generar_nonce():
+        nonce = get_random_bytes(8)
+        return nonce
 
     # IV de 16 bytes (128 bits) o 8 bytes (64 bits) para AES y ChaCha20 respectivamente 
     def generar_IV_AES(tamano_IV):

@@ -11,16 +11,27 @@ def manejar_cliente(client_socket):
     try:
         while True:
             # Recibir mensaje del cliente
-            message = client_socket.recv(1024)
-            if not message:
+            data = client_socket.recv(1024)
+            if not data:
                 break
-            desencriptar = Crypto_functions.AES_ECB_decrypt(key, message)
+
+            # Extraer el nonce del mensaje
+            nonce = data[:8]  # Asumimos que el nonce es de 24 bytes
+            encrypted_message = data[8:]
+
+            # Desencriptar el mensaje
+            desencriptar = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
             print(f"Cliente: {desencriptar.decode('utf-8')}")
             
             # Enviar respuesta al cliente
             response = input("Servidor: ")
-            encriptar = Crypto_functions.AES_ECB_encrypt(key, response.encode('utf-8'))
-            client_socket.send(encriptar)
+
+            # Generar un nuevo nonce para la respuesta
+            nonce = Crypto_functions.generar_nonce()
+            encriptar = Crypto_functions.Salsa20_encrypt(key, nonce, response.encode('utf-8'))
+
+            # Enviar el nonce y el mensaje encriptado
+            client_socket.send(nonce + encriptar)
     except Exception as e:
         print(f"Error en enviar_recibir_mensajes: {e}")
     finally:
@@ -37,7 +48,7 @@ def iniciar_servidor():
     client_socket, client_address = server_socket.accept()
     print(f"Conectado con {client_address}")
 
-    # Generar clave y enviarla al cliente
+    # Generar clave y enviarla al cliente (la clave permanece constante)
     key = Crypto_functions.generar_clave_AES()
     client_socket.send(key)
 
