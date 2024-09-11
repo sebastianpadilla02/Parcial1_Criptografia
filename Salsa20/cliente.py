@@ -1,7 +1,5 @@
 import socket
 import threading
-
-#importar el modulo funciones
 from funciones import Crypto_functions
 
 key = None  # Define key as None
@@ -27,7 +25,13 @@ def recibir_mensajes(client_socket):
 
             # Desencriptar el mensaje
             desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
-            print(f"Servidor: {desencriptado.decode('utf-8')}")
+
+            # Limpiar la línea de entrada del cliente para evitar interferencias
+            print("\r" + " " * 80, end="")  # Borrar la línea actual
+            print(f"\rServidor: {desencriptado.decode('utf-8')}")  # Imprimir mensaje del servidor
+
+            # Volver a mostrar el prompt para el cliente
+            print("Cliente: ", end="", flush=True)
 
     except Exception as e:
         print(f"Error en recibir_mensajes: {e}")
@@ -38,10 +42,11 @@ def iniciar_cliente():
     global key  # Hacer referencia a la variable global key
     
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('127.0.0.1', 8080))
+    client_socket.connect(('172.20.10.2', 8080))
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))
+    thread.daemon = True  # Asegurar que el hilo se detenga cuando el programa finalice
     thread.start()
 
     while True:
