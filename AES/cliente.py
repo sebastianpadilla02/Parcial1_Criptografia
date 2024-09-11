@@ -20,13 +20,13 @@ def recibir_mensajes(client_socket):
             data = client_socket.recv(1024)
             if not data:
                 break
-
+            print(data)
             # Extraer el nonce del mensaje
-            nonce = data[:8]  # Asumimos que el nonce es de 8 bytes
-            encrypted_message = data[8:]
+            iv = data[:16]  # Asumimos que el nonce es de 24 bytes
+            encrypted_message = data[16:]
 
             # Desencriptar el mensaje
-            desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
+            desencriptado = Crypto_functions.AES_CBC_decrypt(key, iv, encrypted_message)
             print(f"Servidor: {desencriptado.decode('utf-8')}")
 
     except Exception as e:
@@ -38,10 +38,10 @@ def iniciar_cliente():
     global key  # Hacer referencia a la variable global key
     
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('127.0.0.1', 8080))
+    client_socket.connect(('192.168.230.105', 8080))
 
     # Hilo para recibir mensajes del servidor
-    thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))
+    thread = threading.Thread(target=recibir_mensajes, args=(client_socket))
     thread.start()
 
     while True:
@@ -59,13 +59,13 @@ def iniciar_cliente():
                 break
 
             # Generar un nuevo nonce para el mensaje
-            nonce = Crypto_functions.generar_nonce()
+            iv = Crypto_functions.generar_iv_AES()
 
             # Encriptar el mensaje
-            encriptar = Crypto_functions.Salsa20_encrypt(key, nonce, message.encode('utf-8'))
+            encriptar = Crypto_functions.AES_CBC_encrypt(key, iv, message.encode('utf-8'))
 
             # Enviar el nonce y el mensaje encriptado
-            client_socket.send(nonce + encriptar)
+            client_socket.send(iv + encriptar)
         except Exception as e:
             print(f"Error al enviar mensaje: {e}")
             client_socket.close()
