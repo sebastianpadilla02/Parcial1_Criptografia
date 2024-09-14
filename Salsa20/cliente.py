@@ -9,6 +9,8 @@ def recibir_mensajes(client_socket):
     try:
         # Recibir la clave del servidor
         key = client_socket.recv(1024)
+
+        # Verificar que se haya recibido la clave
         if not key:
             print("No se recibió la clave.")
             return
@@ -21,7 +23,7 @@ def recibir_mensajes(client_socket):
 
             # Extraer el nonce del mensaje
             nonce = data[:8]  # Asumimos que el nonce es de 8 bytes
-            encrypted_message = data[8:]
+            encrypted_message = data[8:] # El mensaje encriptado (sin el nonce)
 
             # Desencriptar el mensaje
             desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
@@ -32,7 +34,6 @@ def recibir_mensajes(client_socket):
 
             # Volver a mostrar el prompt para el cliente
             print("Cliente: ", end="", flush=True)
-
     except Exception as e:
         print(f"Error en recibir_mensajes: {e}")
     finally:
@@ -41,6 +42,7 @@ def recibir_mensajes(client_socket):
 def iniciar_cliente():
     global key  # Hacer referencia a la variable global key
     
+    # Crear un socket para el cliente
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(('172.20.10.2', 8080))
 

@@ -17,7 +17,7 @@ def manejar_cliente(client_socket):
 
             # Extraer el nonce del mensaje
             nonce = data[:8]  # Asumimos que el nonce es de 24 bytes
-            encrypted_message = data[8:]
+            encrypted_message = data[8:] # El mensaje encriptado (sin el nonce)
 
             # Desencriptar el mensaje
             desencriptar = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
@@ -40,11 +40,13 @@ def manejar_cliente(client_socket):
 def iniciar_servidor():
     global key
 
+    # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(1)
     print("Esperando conexión...")
 
+    # Aceptar la conexión del cliente
     client_socket, client_address = server_socket.accept()
     print(f"Conectado con {client_address}")
 

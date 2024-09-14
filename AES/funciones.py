@@ -18,11 +18,6 @@ class Crypto_functions:
         nonce = get_random_bytes(8)
         return nonce
 
-    # IV de 16 bytes (128 bits) o 8 bytes (64 bits) para AES y ChaCha20 respectivamente 
-    def generar_IV_AES(tamano_IV):
-        IV = get_random_bytes(tamano_IV)
-        return IV
-
     def AES_ECB_encrypt(key, texto_original):
         cipher = AES.new(key, AES.MODE_ECB)
         texto_padded = pad(texto_original, AES.block_size)

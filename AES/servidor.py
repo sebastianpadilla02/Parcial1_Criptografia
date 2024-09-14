@@ -5,6 +5,7 @@ from funciones import Crypto_functions
 
 key = None  # Define key as None
 
+# Función para manejar al cliente
 def manejar_cliente(client_socket):
     global key
 
@@ -15,22 +16,24 @@ def manejar_cliente(client_socket):
             if not data:
                 break
 
-            # Extraer el nonce del mensaje
-            iv = data[:16]  # Asumimos que el nonce es de 24 bytes
-            encrypted_message = data[16:]
+            # Extraer el nonce(iv) del mensaje
+            iv = data[:16]  # Asumimos que el nonce(iv) es de 16 bytes en AES-256
+            encrypted_message = data[16:] # El mensaje encriptado
 
             # Desencriptar el mensaje
             desencriptar = Crypto_functions.AES_CBC_decrypt(key, iv, encrypted_message)
+            # Imprimir el mensaje del cliente
             print(f"Cliente: {desencriptar.decode('utf-8')}")
             
             # Enviar respuesta al cliente
             response = input("Servidor: ")
 
-            # Generar un nuevo nonce para la respuesta
+            # Generar un nuevo nonce(iv) para la respuesta
             iv = Crypto_functions.generar_iv_AES()
+            # Encriptar la respuesta
             encriptar = Crypto_functions.AES_CBC_encrypt(key, iv, response.encode('utf-8'))
 
-            # Enviar el nonce y el mensaje encriptado
+            # Enviar el iv y el mensaje encriptado
             client_socket.send(iv + encriptar)
     except Exception as e:
         print(f"Error en enviar_recibir_mensajes: {e}")
@@ -47,16 +50,15 @@ def iniciar_servidor():
     with open('key.bin', 'wb') as file:
         file.write(key)
 
+    # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(1)
     print("Esperando conexión...")
 
+    # Aceptar la conexión del cliente
     client_socket, client_address = server_socket.accept()
     print(f"Conectado con {client_address}")
-
-    #print(f"Clave generada y guardada en 'key.bin': {key}")
-    #client_socket.send(key)
 
     manejar_cliente(client_socket)
     server_socket.close()
